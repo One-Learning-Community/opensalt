@@ -214,7 +214,7 @@ class User implements UserInterface, \Serializable, EquatableInterface
      */
     public function setRoles($roles)
     {
-        if (!$roles instanceof \Traversable) {
+        if (!(is_array($roles) ||$roles instanceof \Traversable)) {
             throw new \InvalidArgumentException('The passed roles are not an array');
         }
 

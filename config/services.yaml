@@ -20,9 +20,21 @@ parameters:
     env(COOKIE_SECRET): null
     env(GITHUB_CLIENT_ID): null
     env(GITHUB_CLIENT_SECRET): null
+    env(OAUTH_CLIENT_ID): null
+    env(OAUTH_CLIENT_SECRET): null
+    env(OAUTH_AUTHORIZE_URL): null
+    env(OAUTH_TOKEN_URL): null
+    env(OAUTH_USERINFO_URL): null
+    env(OAUTH_SCOPES): 'openid email roles'
+    env(OAUTH_ROLES_FIELD): 'roles'
+    env(OAUTH_SUPER_ADMIN_ROLES): ''
+    env(OAUTH_SUPER_EDITOR_ROLES): ''
+    env(OAUTH_ADMIN_ROLES): ''
+    env(OAUTH_EDITOR_ROLES): ''
     env(COMMENTS_FEATURE): inactive
     env(COMMENT_ATTACHMENTS): inactive
     env(CREATE_ACCOUNT_FEATURE): inactive
+    env(OPENID_AUTHENTICATION_FEATURE): inactive
     env(USE_MAIL_FEATURE): inactive
     env(MAIL_FEATURE_FROM_EMAIL): null
     env(BRAND_LOGO_URL): null
@@ -70,6 +82,17 @@ parameters:
     cookie_secret: '%env(COOKIE_SECRET)%'
     github_client_id: '%env(GITHUB_CLIENT_ID)%'
     github_client_secret: '%env(GITHUB_CLIENT_SECRET)%'
+    oauth_client_id: '%env(OAUTH_CLIENT_ID)%'
+    oauth_client_secret: '%env(OAUTH_CLIENT_SECRET)%'
+    oauth_authorize_url: '%env(OAUTH_AUTHORIZE_URL)%'
+    oauth_token_url: '%env(OAUTH_TOKEN_URL)%'
+    oauth_userinfo_url: '%env(OAUTH_USERINFO_URL)%'
+    oauth_scopes: '%env(OAUTH_SCOPES)%'
+    oauth_roles_field: '%env(OAUTH_ROLES_FIELD)%'
+    oauth_super_admin_roles: '%env(OAUTH_SUPER_ADMIN_ROLES)%'
+    oauth_super_editor_roles: '%env(OAUTH_SUPER_EDITOR_ROLES)%'
+    oauth_admin_roles: '%env(OAUTH_ADMIN_ROLES)%'
+    oauth_editor_roles: '%env(OAUTH_EDITOR_ROLES)%'
     brand_logo_url: '%env(BRAND_LOGO_URL)%'
     brand_logo_style: '%env(BRAND_LOGO_STYLE)%'
     brand_link_url: '%env(BRAND_LINK_URL)%'
@@ -85,6 +108,7 @@ parameters:
     firebase_private_key: '%env(FIREBASE_PRIVATE_KEY)%'
     firebase_prefix: '%env(FIREBASE_PREFIX)%'
     create_account_feature: '%env(CREATE_ACCOUNT_FEATURE)%'
+    openid_authentication_feature: '%env(OPENID_AUTHENTICATION_FEATURE)%'
     use_mail_feature: '%env(USE_MAIL_FEATURE)%'
     mail_feature_from_email: '%env(MAIL_FEATURE_FROM_EMAIL)%'
     google_captcha_site_key: '%env(GOOGLE_CAPTCHA_SITE_KEY)%'
@@ -148,6 +172,22 @@ services:
             $githubClientId: '%github_client_id%'
             $githubClientSecret: '%github_client_secret%'
             $githubRedirectUri: "@=container.hasParameter('github_redirect_uri') ? parameter('github_redirect_uri') : null"
+
+    App\Controller\User\OpenIdAuthenticationController:
+        tags: [ 'controller.service_arguments' ]
+        arguments:
+            $oauthClientId: '%oauth_client_id%'
+            $oauthClientSecret: '%oauth_client_secret%'
+            $oauthRedirectUri: "@=container.hasParameter('oauth_redirect_uri') ? parameter('oauth_redirect_uri') : null"
+            $oauthAuthorizeUrl: '%oauth_authorize_url%'
+            $oauthAccessTokenUrl: '%oauth_token_url%'
+            $oauthUserInfoUrl: '%oauth_userinfo_url%'
+            $oauthScopes: '%oauth_scopes%'
+            $oauthRolesField: '%oauth_roles_field%'
+            $oauthSuperAdminRoles: '%oauth_super_admin_roles%'
+            $oauthSuperEditorRoles: '%oauth_super_editor_roles%'
+            $oauthAdminRoles: '%oauth_admin_roles%'
+            $oauthEditorRoles: '%oauth_editor_roles%'
 
     App\Controller\SessionController:
         tags: ['controller.service_arguments']
