@@ -5,6 +5,7 @@ namespace App\Controller\User;
 use App\Command\CommandDispatcherTrait;
 use App\Entity\User\Organization;
 use App\Entity\User\User;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use Symfony\Component\Routing\Annotation\Route;
 use League\OAuth2\Client\Provider\GenericProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -174,6 +175,13 @@ class OpenIdAuthenticationController extends AbstractController
             $this->container->get('security.token_storage')->setToken($authToken);
 
             return $this->redirectToRoute('lsdoc_index');
+        }
+        catch(IdentityProviderException $ex) {
+            return $this->render('framework/oauth/error.twig', [
+                'error' => $ex->getMessage(),
+                'error_description' => json_encode($ex->getResponseBody()),
+                'retry_url' => $this->generateUrl('openid_login'),
+            ]);
         }
         catch(\Exception $ex) {
             return $this->render('framework/oauth/error.twig', [
