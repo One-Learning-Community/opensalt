@@ -16,33 +16,37 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-xs-4">
-            </div>
-            <div class="col-xs-4">
-                <form id="login-form" action="{{ path('login') }}" method="post">
-                    <div class="form-group">
-                        <label for="username">Username:</label>
-                        <input class="form-control" type="text" id="username" name="_username" value="{{ last_username }}" />
-                    </div>
+            <div class="col-xs-4 col-xs-offset-4">
+                {% if not 'openid_authentication' is active feature %}
+                    <form id="login-form" action="{{ path('login') }}" method="post">
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input class="form-control" type="text" id="username" name="_username" value="{{ last_username }}" />
+                        </div>
 
-                    <div class="form-group">
-                        <label for="password">Password:</label>
-                        <input class="form-control" type="password" id="password" name="_password" />
-                    </div>
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input class="form-control" type="password" id="password" name="_password" />
+                        </div>
 
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}" />
-                    {% if redirect is not empty %}
-                        <input type="hidden" name="_target_path" value="{{ redirect }}"/>
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}" />
+                        {% if redirect is not empty %}
+                            <input type="hidden" name="_target_path" value="{{ redirect }}"/>
+                        {% endif %}
+
+                        {% if google_captcha_site_key is not empty %}
+                            <button class="pull-right btn btn-primary btn-login g-recaptcha" data-sitekey="{{ google_captcha_site_key }}" data-callback="onSubmit">Login</button>
+                        {% else %}
+                            <button class="pull-right btn btn-primary btn-login" type="submit">Login</button>
+                        {% endif %}
+                    </form>
+                    {% if 'create_account' is active feature %}
+                        <a class="btn btn-link new-account" href="{{ path('public_user_signup') }}">Create User Account</a>
                     {% endif %}
-
-                    {% if google_captcha_site_key is not empty %}
-                        <button class="pull-right btn btn-primary btn-login g-recaptcha" data-sitekey="{{ google_captcha_site_key }}" data-callback="onSubmit">Login</button>
-                    {% else %}
-                        <button class="pull-right btn btn-primary btn-login" type="submit">Login</button>
-                    {% endif %}
-                </form>
-                {% if 'create_account' is active feature %}
-                    <a class="btn btn-link new-account" href="{{ path('public_user_signup') }}">Create User Account</a>
+                {% else %}
+                    <div class="text-center">
+                        <a class="btn btn-primary" href="{{  path('openid_login') }}">Login via Single Sign On</a>
+                    </div>
                 {% endif %}
             </div>
         </div>
