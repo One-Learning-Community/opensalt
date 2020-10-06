@@ -5,9 +5,9 @@ namespace App\Controller\User;
 use App\Command\CommandDispatcherTrait;
 use App\Entity\User\Organization;
 use App\Entity\User\User;
+use App\Service\OpenIDAuthenticationService;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use Symfony\Component\Routing\Annotation\Route;
-use League\OAuth2\Client\Provider\GenericProvider;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,84 +25,13 @@ class OpenIdAuthenticationController extends AbstractController
     use CommandDispatcherTrait;
 
     /**
-     * @var string
+     * @var OpenIDAuthenticationService
      */
-    private $oauthClientId;
+    private OpenIDAuthenticationService $service;
 
-    /**
-     * @var string
-     */
-    private $oauthClientSecret;
-
-    /**
-     * @var string
-     */
-    private $oauthRedirectUri;
-
-    /**
-     * @var string
-     */
-    private $oauthAuthorizeUrl;
-
-    /**
-     * @var string
-     */
-    private $oauthAccessTokenUrl;
-
-    /**
-     * @var string
-     */
-    private $oauthUserInfoUrl;
-
-    /**
-     * @var string
-     */
-    private $oauthScopes;
-
-    /**
-     * @var string
-     */
-    private $oauthRolesField;
-
-    /**
-     * @var string
-     */
-    private $oauthSuperAdminRoles;
-
-    /**
-     * @var string
-     */
-    private $oauthSuperEditorRoles;
-
-    /**
-     * @var string
-     */
-    private $oauthAdminRoles;
-
-    /**
-     * @var string
-     */
-    private $oauthEditorRoles;
-
-
-    public function __construct(string $oauthClientId = null, string $oauthClientSecret = null, string $oauthRedirectUri = null,
-                                string $oauthAuthorizeUrl = null, string $oauthAccessTokenUrl = null, string $oauthUserInfoUrl = null,
-                                string $oauthScopes = 'openid email roles', string $oauthRolesField = 'roles',
-                                string $oauthSuperAdminRoles = '', string $oauthSuperEditorRoles = '',
-                                string $oauthAdminRoles = '', string $oauthEditorRoles = '')
+    public function __construct(OpenIDAuthenticationService $service)
     {
-        $this->oauthClientId = $oauthClientId;
-        $this->oauthClientSecret = $oauthClientSecret;
-        $this->oauthRedirectUri = $oauthRedirectUri;
-        $this->oauthAuthorizeUrl = $oauthAuthorizeUrl;
-        $this->oauthAccessTokenUrl = $oauthAccessTokenUrl;
-        $this->oauthUserInfoUrl = $oauthUserInfoUrl;
-        $this->oauthScopes = $oauthScopes;
-        $this->oauthRolesField = $oauthRolesField;
-        $this->oauthSuperAdminRoles = $oauthSuperAdminRoles;
-        $this->oauthSuperEditorRoles = $oauthSuperEditorRoles;
-        $this->oauthAdminRoles = $oauthAdminRoles;
-        $this->oauthEditorRoles = $oauthEditorRoles;
+        $this->service = $service;
     }
 
     /**
@@ -165,8 +94,7 @@ class OpenIdAuthenticationController extends AbstractController
             }
 
             // Update roles every time
-            $roles = $details[$this->oauthRolesField] ?? [];
-            $user->setRoles($this->mapRoles($roles));
+            $user->setRoles($this->service->getRolesFromToken($details));
             $em->persist($user);
             $em->flush();
 
@@ -194,49 +122,12 @@ class OpenIdAuthenticationController extends AbstractController
 
     protected function getProvider()
     {
-        if (!empty($this->oauthRedirectUri)) {
-            $redirectUri = $this->oauthRedirectUri;
-        }
-        if (empty($redirectUri)) {
-            $redirectUri = $this->generateUrl(
-                'openid_login',
-                [],
-                UrlGeneratorInterface::ABSOLUTE_URL
-            );
-        }
+        $redirectUri = $this->generateUrl(
+            'openid_login',
+            [],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
 
-        return new GenericProvider([
-            'clientId'     => $this->oauthClientId,
-            'clientSecret' => $this->oauthClientSecret,
-            'redirectUri'  => $redirectUri,
-            'urlAuthorize' => $this->oauthAuthorizeUrl,
-            'urlAccessToken' => $this->oauthAccessTokenUrl,
-            'urlResourceOwnerDetails' => $this->oauthUserInfoUrl,
-            'scopes' => $this->oauthScopes
-        ]);
-    }
-
-    protected function mapRoles(array $roles)
-    {
-        $roleMap = [
-            'ROLE_EDITOR' => $this->oauthEditorRoles,
-            'ROLE_ADMIN' => $this->oauthAdminRoles,
-            'ROLE_SUPER_EDITOR' => $this->oauthSuperEditorRoles,
-            'ROLE_SUPER_USER' => $this->oauthSuperAdminRoles,
-        ];
-
-        $mappedRoles = [
-            'ROLE_USER', // Default
-        ];
-
-        foreach($roleMap as $userRole => $mappableRoles)
-        {
-            if ($mappableRoles && array_intersect($roles, explode(' ', $mappableRoles)))
-            {
-                $mappedRoles[] = $userRole;
-            }
-        }
-
-        return $mappedRoles;
+        return $this->service->getProvider($redirectUri);
     }
 }

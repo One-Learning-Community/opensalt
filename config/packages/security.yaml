@@ -51,6 +51,8 @@ security:
             guard:
                 authenticators:
                     - App\Security\LoginFormAuthenticator
+                    - App\Security\ApiKeyAuthenticator
+                entry_point: App\Security\LoginFormAuthenticator
 
     # with these settings you can restrict or allow access for different parts
     # of your application based on roles, ip, host or methods

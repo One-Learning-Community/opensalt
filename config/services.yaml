@@ -31,6 +31,7 @@ parameters:
     env(OAUTH_SUPER_EDITOR_ROLES): ''
     env(OAUTH_ADMIN_ROLES): ''
     env(OAUTH_EDITOR_ROLES): ''
+    env(OAUTH_JWK_URL): ''
     env(COMMENTS_FEATURE): inactive
     env(COMMENT_ATTACHMENTS): inactive
     env(CREATE_ACCOUNT_FEATURE): inactive
@@ -93,6 +94,7 @@ parameters:
     oauth_super_editor_roles: '%env(OAUTH_SUPER_EDITOR_ROLES)%'
     oauth_admin_roles: '%env(OAUTH_ADMIN_ROLES)%'
     oauth_editor_roles: '%env(OAUTH_EDITOR_ROLES)%'
+    oauth_jwk_url: '%env(OAUTH_JWK_URL)%'
     brand_logo_url: '%env(BRAND_LOGO_URL)%'
     brand_logo_style: '%env(BRAND_LOGO_STYLE)%'
     brand_link_url: '%env(BRAND_LINK_URL)%'
@@ -175,19 +177,6 @@ services:
 
     App\Controller\User\OpenIdAuthenticationController:
         tags: [ 'controller.service_arguments' ]
-        arguments:
-            $oauthClientId: '%oauth_client_id%'
-            $oauthClientSecret: '%oauth_client_secret%'
-            $oauthRedirectUri: "@=container.hasParameter('oauth_redirect_uri') ? parameter('oauth_redirect_uri') : null"
-            $oauthAuthorizeUrl: '%oauth_authorize_url%'
-            $oauthAccessTokenUrl: '%oauth_token_url%'
-            $oauthUserInfoUrl: '%oauth_userinfo_url%'
-            $oauthScopes: '%oauth_scopes%'
-            $oauthRolesField: '%oauth_roles_field%'
-            $oauthSuperAdminRoles: '%oauth_super_admin_roles%'
-            $oauthSuperEditorRoles: '%oauth_super_editor_roles%'
-            $oauthAdminRoles: '%oauth_admin_roles%'
-            $oauthEditorRoles: '%oauth_editor_roles%'
 
     App\Controller\SessionController:
         tags: ['controller.service_arguments']
@@ -233,6 +222,22 @@ services:
         arguments:
             $attachmentUrlPrefix: '%attachment_url_prefix%'
             $bucketPrefix: '%aws_prefix%'
+
+    App\Service\OpenIDAuthenticationService:
+        arguments:
+            $oauthClientId: '%oauth_client_id%'
+            $oauthClientSecret: '%oauth_client_secret%'
+            $oauthRedirectUri: "@=container.hasParameter('oauth_redirect_uri') ? parameter('oauth_redirect_uri') : null"
+            $oauthAuthorizeUrl: '%oauth_authorize_url%'
+            $oauthAccessTokenUrl: '%oauth_token_url%'
+            $oauthUserInfoUrl: '%oauth_userinfo_url%'
+            $oauthJwkUrl: '%oauth_jwk_url%'
+            $oauthScopes: '%oauth_scopes%'
+            $oauthRolesField: '%oauth_roles_field%'
+            $oauthSuperAdminRoles: '%oauth_super_admin_roles%'
+            $oauthSuperEditorRoles: '%oauth_super_editor_roles%'
+            $oauthAdminRoles: '%oauth_admin_roles%'
+            $oauthEditorRoles: '%oauth_editor_roles%'
 
     # Workarounds for 3.4 deprecations
     Symfony\Bundle\SwiftmailerBundle\Command\:
