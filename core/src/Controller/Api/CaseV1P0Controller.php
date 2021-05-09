@@ -45,6 +45,7 @@ class CaseV1P0Controller extends AbstractController
         $offset = (int) $request->query->get('offset', '0');
         $sort = $request->query->get('sort', null);
         $orderBy = $request->query->get('orderBy', 'asc');
+        $includeMirrored = $request->query->get('includeMirrored', false);
 
         /*
         $filter = $request->query->get('filter', '');
@@ -68,8 +69,8 @@ class CaseV1P0Controller extends AbstractController
             if (LsDoc::ADOPTION_STATUS_PRIVATE_DRAFT === $doc->getAdoptionStatus()) {
                 continue;
             }
-            if (null !== $doc->getMirroredFramework()) {
-                // Do not show mirrored frameworks as available documents
+
+            if (!$includeMirrored && null !== $doc->getMirroredFramework()) {
                 continue;
             }
 
