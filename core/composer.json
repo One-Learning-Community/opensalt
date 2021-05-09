@@ -26,7 +26,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "^8.0.0",
+        "php": "^7.4|^8.0.0",
         "ext-PDO": "*",
         "ext-bz2": "*",
         "ext-ctype": "*",
